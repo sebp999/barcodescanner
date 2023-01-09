@@ -1,16 +1,13 @@
-package com.scan.barcodescanner
+package com.sebswebs.barcodescanner
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
-import androidx.camera.core.CameraSelector
-import androidx.camera.core.ExperimentalGetImage
-import androidx.camera.core.ImageAnalysis
-import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
+import androidx.appcompat.app.AppCompatActivity
+import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -19,8 +16,9 @@ import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
-import com.scan.barcodescanner.databinding.ActivityMainBinding
+import com.sebswebs.barcodescanner.databinding.ActivityMainBinding
 import java.util.concurrent.Executors
+
 
 private const val CAMERA_PERMISSION_REQUEST_CODE = 1
 
@@ -28,8 +26,9 @@ private const val CAMERA_PERMISSION_REQUEST_CODE = 1
 class MainActivity : AppCompatActivity() {
 
   private lateinit var binding: ActivityMainBinding
-
+  private var alreadySwitched = false
   override fun onCreate(savedInstanceState: Bundle?) {
+
     super.onCreate(savedInstanceState)
     binding = ActivityMainBinding.inflate(layoutInflater)
     setContentView(binding.root)
@@ -93,15 +92,7 @@ class MainActivity : AppCompatActivity() {
       ones listed here, and you may not need to offer support for all of these. You should only
       specify the ones you need */
       val options = BarcodeScannerOptions.Builder().setBarcodeFormats(
-        Barcode.FORMAT_CODE_128,
-        Barcode.FORMAT_CODE_39,
-        Barcode.FORMAT_CODE_93,
-        Barcode.FORMAT_EAN_8,
-        Barcode.FORMAT_EAN_13,
-        Barcode.FORMAT_QR_CODE,
-        Barcode.FORMAT_UPC_A,
-        Barcode.FORMAT_UPC_E,
-        Barcode.FORMAT_PDF417
+        Barcode.FORMAT_QR_CODE
       ).build()
 
       // getClient() creates a new instance of the MLKit barcode scanner with the specified options
@@ -138,6 +129,21 @@ class MainActivity : AppCompatActivity() {
     }, ContextCompat.getMainExecutor(this))
   }
 
+  private fun onFoundActivity(value: String) {
+    Log.e(TAG, "switching...")
+    val switchActivityIntent = Intent(this, BarcodeIdentified::class.java)
+    switchActivityIntent.putExtra("barcodeValue", value)
+    if (!alreadySwitched) {
+      startActivity(switchActivityIntent)
+      alreadySwitched = true
+      Log.e(TAG,"I switched")
+    }
+    else {
+      Log.e(TAG, "I had already switched")
+    }
+
+  }
+
   private fun processImageProxy(
     barcodeScanner: BarcodeScanner,
     imageProxy: ImageProxy
@@ -159,8 +165,8 @@ class MainActivity : AppCompatActivity() {
           // `rawValue` is the decoded value of the barcode
           barcode?.rawValue?.let { value ->
               Log.e(TAG, value)
-              Log.e(TAG, binding.bottomText.text.toString())
-              binding.bottomText.text = value.toString()
+              binding.bottomText.text = value
+              onFoundActivity(value)
           }
         }
         .addOnFailureListener {
@@ -183,5 +189,6 @@ class MainActivity : AppCompatActivity() {
 
   companion object {
     val TAG: String = MainActivity::class.java.simpleName
+
   }
 }

@@ -1,4 +1,4 @@
-package com.scan.barcodescanner
+package com.sebswebs.barcodescanner
 
 import org.junit.Test
 
