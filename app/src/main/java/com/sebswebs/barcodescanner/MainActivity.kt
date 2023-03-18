@@ -5,13 +5,13 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-//import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -36,6 +36,13 @@ class MainActivity : AppCompatActivity() {
 
     if (hasCameraPermission()) bindCameraUseCases()
     else requestPermission()
+
+    binding.button4.setOnClickListener(object: View.OnClickListener {
+      override fun onClick(view: View?) {
+        switchToReadDatabase()
+      }
+    })
+
   }
 
   // checking to see whether user has already granted permission
@@ -52,6 +59,11 @@ class MainActivity : AppCompatActivity() {
       arrayOf(Manifest.permission.CAMERA),
       CAMERA_PERMISSION_REQUEST_CODE
     )
+  }
+
+  private fun switchToReadDatabase() {
+    val switchActivityIntent = Intent(this, ReadDatabase::class.java)
+    startActivity(switchActivityIntent)
   }
 
   override fun onRequestPermissionsResult(
