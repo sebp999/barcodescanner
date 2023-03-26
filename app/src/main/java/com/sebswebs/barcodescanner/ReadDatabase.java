@@ -9,9 +9,11 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +22,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
@@ -33,6 +36,7 @@ public class ReadDatabase extends AppCompatActivity {
     TextView resultsTextView;
     ProgressDialog progressDialog;
     Button displayData;
+    int myProgressNum = 0;
 
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -54,18 +58,20 @@ public class ReadDatabase extends AppCompatActivity {
 
     private class MyAsyncTasks extends AsyncTask<String, String, String> {
         private Context myContext;
+        private ProgressBar myProgressBar;
+        private TextView myProgressText;
+        private Handler handler = new Handler();
+
         public MyAsyncTasks(Context aContext) {
             myContext = aContext; // TODO weak reference prevents mem leaks
         }
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-
-            // display a progress dialog for good user experiance
-            progressDialog = new ProgressDialog(ReadDatabase.this);
-            progressDialog.setMessage("processing results");
-            progressDialog.setCancelable(false);
-            progressDialog.show();
+            myProgressBar = (ProgressBar) findViewById(R.id.progressBar);
+            myProgressBar.setMax(10000);
+            myProgressText = (TextView) findViewById(R.id.updatedText) ;
+            myProgressText.setText("Updated "+myProgressNum+"/"+myProgressBar.getMax());
         }
         @Override
         protected String doInBackground(String... params) {
@@ -77,14 +83,13 @@ public class ReadDatabase extends AppCompatActivity {
                 HttpURLConnection urlConnection = null;
                 try {
                     url = new URL(myUrl);
-                    //open a URL coonnection
                     urlConnection = (HttpURLConnection) url.openConnection();
                     InputStream in = urlConnection.getInputStream();
                     InputStreamReader isw = new InputStreamReader(in);
-                    int data = isw.read();
-                    while (data != -1) {
-                        result += (char) data;
-                        data = isw.read();
+                    BufferedReader bufferedReader = new BufferedReader(isw);
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        result += line;
                     }
                     Log.e("BarcodeScanner", "Finished reading data from API " + new Date());
                     // return the data to onPostExecute method
@@ -137,7 +142,6 @@ public class ReadDatabase extends AppCompatActivity {
         protected void onPostExecute(String s) {
 
             // dismiss the progress dialog after receiving data from API
-            progressDialog.dismiss();
 
             Log.e("BarcodeScanner", "Adding data to database from API "+new Date());
             try {
@@ -146,18 +150,23 @@ public class ReadDatabase extends AppCompatActivity {
                 if (patients.length() > 0 ){
                     recreateDatabase();
                 }
-                String patientsList = "";
                 for (int i = 0; i < patients.length(); i++) {
                     JSONObject patient = patients.getJSONObject(i);
                     addPatientToDb(patient);
                     if (i % 100 == 0) {
-                        Log.e("BarcodeScanner", i + " records added to database" + new Date());
+                        myProgressNum = i;
+                        handler.post(new Runnable() {
+                            public void run() {
+                                Log.e("BarcodeScanner", myProgressNum + " records added to database" + new Date());
+                                myProgressBar.setProgress(myProgressNum);
+                                myProgressText.setText(myProgressNum + "/" + myProgressBar.getMax());
+                            }
+                        });
                     }
                 }
                 resultsTextView.setVisibility(View.VISIBLE);
 
                 //Display data with the Textview
-                resultsTextView.setText(patientsList);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
