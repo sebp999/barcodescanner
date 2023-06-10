@@ -22,15 +22,14 @@ public class PatientDbEntries {
     }
     public static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + PatientEntry.TABLE_NAME + " (" +
-                    PatientEntry.MEMBER_ID_COLUMN + " INTEGER PRIMARY KEY," +
-                    PatientEntry.HOUSEHOLD_ID_COLUMN + " INTEGER NOT NULL," +
+                    PatientEntry.MEMBER_ID_COLUMN + " TEXT PRIMARY KEY," +
+                    PatientEntry.HOUSEHOLD_ID_COLUMN + " TEXT NOT NULL," +
                     PatientEntry.CLIENT_NAME_COLUMN + " TEXT NOT NULL," +
                     PatientEntry.MEMBER_GENDER_COLUMN + " TEXT NOT NULL," +
                     PatientEntry.MEMBER_DATE_OF_BIRTH_COLUMN + " TEXT NOT NULL," +
                     PatientEntry.CURRENT_SUBSCRIPTION_DATE_COLUMN + " TEXT NOT NULL, " +
                     PatientEntry.SUBSCRIPTION_DURATION_COLUMN + " TEXT NOT NULL,  " +
-                    PatientEntry.MEMBER_IMAGE_PATH + " TEXT NOT NULL"+
-                    ")"
+                    PatientEntry.MEMBER_IMAGE_PATH + " TEXT NOT NULL)"
             ;
     public static final String SQL_DELETE_ENTRIES =
             "DELETE FROM " + PatientEntry.TABLE_NAME + " WHERE 1=1";
