@@ -6,12 +6,14 @@
   android:layout_height="match_parent"
   tools:context=".MainActivity">
 
+  <include layout="@layout/top_bar" />
+
   <androidx.camera.view.PreviewView
-    android:id="@+id/cameraView"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintBottom_toTopOf="@+id/bottomText"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+      android:id="@+id/cameraView"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      app:layout_constraintBottom_toTopOf="@+id/bottomText"
+      app:layout_constraintTop_toBottomOf="@+id/menu_bar">
 
   </androidx.camera.view.PreviewView>
 
@@ -19,7 +21,7 @@
       android:id="@+id/button4"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_marginTop="20dp"
+      android:layout_marginTop="80dp"
       android:onClick="gotoDatabaseREad"
       android:text="Button"
       app:layout_constraintLeft_toLeftOf="parent"

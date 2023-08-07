@@ -9,6 +9,9 @@ import java.net.URL;
 import java.util.Date;
 
 public class FeedThread extends Thread {
+    /**
+     * Updates the database from a URL
+     */
     private String feedContents = "";
     private URL myUrl;
 
@@ -21,6 +24,9 @@ public class FeedThread extends Thread {
     }
 
     public void run() {
+        /**
+         * Connects to URL, gets text
+         */
         feedContents = "";
         HttpURLConnection urlConnection = null;
         try {

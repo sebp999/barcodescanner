@@ -238,6 +238,10 @@ public class ReadDatabase extends AppCompatActivity {
         }
 
         private String readFeedContents() throws InterruptedException, MalformedURLException {
+            /**
+             * Get feed contents
+             * @return the feed contents
+             */
             FeedThread t = new FeedThread(new URL(myURL));
             t.start();
             t.join();
