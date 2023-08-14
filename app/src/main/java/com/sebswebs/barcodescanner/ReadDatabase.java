@@ -64,6 +64,7 @@ public class ReadDatabase extends AppCompatActivity {
 
             ContentValues values = new ContentValues();
             values.put(PatientDbEntries.PatientEntry.CLIENT_NAME_COLUMN, some_patient.getString("Client_Name"));
+            values.put(PatientDbEntries.PatientEntry.MEMBER_ID_COLUMN, some_patient.getString("MemberId"));
             values.put(PatientDbEntries.PatientEntry.HOUSEHOLD_ID_COLUMN, some_patient.getString("HouseholdId"));
             values.put(PatientDbEntries.PatientEntry.MEMBER_GENDER_COLUMN, some_patient.getString("MemberGender"));
             values.put(PatientDbEntries.PatientEntry.MEMBER_DATE_OF_BIRTH_COLUMN, some_patient.getString("MemberDateOfBirth"));
@@ -214,7 +215,7 @@ public class ReadDatabase extends AppCompatActivity {
             URLConnection conn = imgDownloadUrl.openConnection();
             InputStream input = new BufferedInputStream(imgDownloadUrl.openStream(), 8192);
             OutputStream output = new FileOutputStream(getFilesDir().toString() + "/patient_images/"+ patientId + ".jpg");
-            Log.e("", "outputting file" + getFilesDir().toString()+"/patient_images/");
+            Log.e("", "outputting file " + getFilesDir().toString()+"/patient_images/");
             byte data[] = new byte[1024];
 
             long total = 0;
