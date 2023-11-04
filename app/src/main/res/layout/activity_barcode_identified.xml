@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".BarcodeIdentified">
+    tools:context=".ShowResult">
 
     <include
         android:id="@+id/include3"
@@ -156,6 +156,18 @@
         app:layout_constraintStart_toEndOf="@+id/SubscriptionDuration_key"
         app:layout_constraintTop_toBottomOf="@+id/CurrentSubscriptionDate" />
 
+    <TextView
+        android:id="@+id/Messages"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Subscription Expired"
+        android:textColor="#FF0000"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:visibility="invisible"
+        app:layout_constraintStart_toStartOf="@+id/tv_hooray"
+        app:layout_constraintTop_toBottomOf="@+id/SubscriptionDuration_key" />
 
 
     <Button

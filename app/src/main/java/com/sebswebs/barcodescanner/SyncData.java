@@ -4,8 +4,8 @@ import static com.sebswebs.barcodescanner.PatientDbEntries.SQL_DELETE_ENTRIES;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -15,7 +15,8 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.preference.PreferenceManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,24 +31,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.time.Instant;
-import java.util.Date;
-import java.util.List;
 
 
-public class ReadDatabase extends AppCompatActivity {
+public class SyncData extends BaseMenus {
     private static final String FILENAME = "last_updated";
-    private final String URL = "http://10.0.2.2:8000/patients/";
-    private final String URL_UPDATE = "http://10.0.2.2:8000/patients/?since=";
-
-    private final String IMG_DOWNLOAD_URL = "http://10.0.2.2/";
     private TextView resultsTextView;
     private Button fullSyncButton;
     private Button updateSyncButton;
@@ -90,31 +81,49 @@ public class ReadDatabase extends AppCompatActivity {
         return true;
     }
 
+    private String getPref(String key) {
+        SharedPreferences preferences = (SharedPreferences) PreferenceManager.getDefaultSharedPreferences(this);
+        String val = preferences.getString(key, null);
+        Log.e("preference", "key: "+ key + "val: "+ val);
+        return val;
+    }
 
+    private String getImageServerURL() {
+        return getPref("imageServerURL");
+    }
+    private String getPatientDatabaseURL(){
+        return getPref("patientDatabaseURL");
+    }
+
+    private String getPatientImageDir() {
+        return getPref("deviceImageDir");
+    }
 
     private class UpdateThread extends Thread {
         // A thread that updates the database
-        private String myURL = null;
+        private String myDatabaseURL = null;
         private boolean thisIsUpdate = false;
-        public UpdateThread(String url, boolean isUpdate){
+        public UpdateThread(String dbUrl, boolean isUpdate){
             // constructor
-            myURL = url;
+            myDatabaseURL = dbUrl;
             thisIsUpdate = isUpdate;
         }
+
 
         @Override
         public void run() {
 
             if (thisIsUpdate){
                 try {
-                    Context context = ReadDatabase.this;
+                    Context context = SyncData.this;
                     FileInputStream fis = context.openFileInput(FILENAME);
                     BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
                     String line = reader.readLine();
 
                     String justDate = line.substring(0,10);
-                    myURL+=justDate;
-                    Log.e("BarcodeScanner", "this is an update so I'm using url "+myURL);
+                    myDatabaseURL = myDatabaseURL+"?since="+justDate;
+
+                    Log.e("BarcodeScanner", "this is an update so I'm using url "+ myDatabaseURL);
 
                 } catch (FileNotFoundException e) {
                     //This is the first time it has been run, so report that you have to do a full sync first.
@@ -192,7 +201,7 @@ public class ReadDatabase extends AppCompatActivity {
                 update_progress_display(myProgressBar.getMax(), myProgressBar); // final
                 String filename = "last_updated";
                 String fileContents = Instant.now().toString();
-                Context context = ReadDatabase.this;
+                Context context = SyncData.this;
                 try {
                     FileOutputStream fos = context.openFileOutput(filename, Context.MODE_PRIVATE);
                     fos.write(fileContents.getBytes());
@@ -209,13 +218,14 @@ public class ReadDatabase extends AppCompatActivity {
         }
 
         private void downloadPatientImg(JSONObject patient) throws JSONException, IOException {
+            Log.e("images", getFilesDir().toString());
             int count;
             String patientId = patient.getString("MemberId");
-            URL imgDownloadUrl = new URL(IMG_DOWNLOAD_URL + patientId + ".jpg");
+            URL imgDownloadUrl = new URL(getImageServerURL() + patientId + ".jpg");
             URLConnection conn = imgDownloadUrl.openConnection();
             InputStream input = new BufferedInputStream(imgDownloadUrl.openStream(), 8192);
-            OutputStream output = new FileOutputStream(getFilesDir().toString() + "/patient_images/"+ patientId + ".jpg");
-            Log.e("", "outputting file " + getFilesDir().toString()+"/patient_images/");
+            OutputStream output = new FileOutputStream(getPatientImageDir() + "/"+ patientId + ".jpg");
+            Log.e("", "outputting file " + getFilesDir().toString()+"/");
             byte data[] = new byte[1024];
 
             long total = 0;
@@ -243,7 +253,7 @@ public class ReadDatabase extends AppCompatActivity {
              * Get feed contents
              * @return the feed contents
              */
-            FeedThread t = new FeedThread(new URL(myURL));
+            FeedThread t = new FeedThread(new URL(myDatabaseURL));
             t.start();
             t.join();
             return t.getFeedContents();
@@ -253,14 +263,22 @@ public class ReadDatabase extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.e("DEBUGX", "onCreate");
         super.onCreate(savedInstanceState);
+        Log.e("xxxx", String.valueOf( getExternalFilesDir(null)));
+        Log.e("xxxx", String.valueOf(getExternalFilesDir(Environment.DIRECTORY_PICTURES)));
         setContentView(R.layout.activity_read_database);
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
         resultsTextView = (TextView) findViewById(R.id.textView);
         fullSyncButton = (Button) findViewById(R.id.displayData);
+        String db_url = getPatientDatabaseURL();
+
 
         fullSyncButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new UpdateThread(URL, false).start();
+                new UpdateThread(db_url, false).start();
             }
         });
 
@@ -269,7 +287,7 @@ public class ReadDatabase extends AppCompatActivity {
             @Override
             public void onClick(View view)  {
                 try{
-                    new UpdateThread(URL_UPDATE, true).start();
+                    new UpdateThread(db_url, true).start();
                 } catch (RuntimeException e) {  // No last updated file found.  You have to run full sync first.
                     Throwable cause = e.getCause();
                     if (cause instanceof FileNotFoundException) {

@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.app.ActivityCompat
@@ -19,29 +18,27 @@ import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import com.sebswebs.barcodescanner.databinding.ActivityMainBinding
 import java.util.concurrent.Executors
+import androidx.appcompat.widget.Toolbar
 
 
 private const val CAMERA_PERMISSION_REQUEST_CODE = 1
 
 @ExperimentalGetImage
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseMenus() {
 
   private lateinit var binding: ActivityMainBinding
   private var alreadySwitched = false
   override fun onCreate(savedInstanceState: Bundle?) {
 
     super.onCreate(savedInstanceState)
+    Log.e("xxxx", "xxxx")
     binding = ActivityMainBinding.inflate(layoutInflater)
     setContentView(binding.root)
+    val toolbar = findViewById<View>(R.id.toolbar) as Toolbar
+    setSupportActionBar(toolbar);
 
     if (hasCameraPermission()) bindCameraUseCases()
     else requestPermission()
-
-    binding.button4.setOnClickListener(object: View.OnClickListener {
-      override fun onClick(view: View?) {
-        switchToReadDatabase()
-      }
-    })
 
   }
 
@@ -62,7 +59,7 @@ class MainActivity : AppCompatActivity() {
   }
 
   private fun switchToReadDatabase() {
-    val switchActivityIntent = Intent(this, ReadDatabase::class.java)
+    val switchActivityIntent = Intent(this, SyncData::class.java)
     startActivity(switchActivityIntent)
   }
 
@@ -144,7 +141,7 @@ class MainActivity : AppCompatActivity() {
 
   private fun onFoundActivity(value: String) {
     Log.e(TAG, "switching...")
-    val switchActivityIntent = Intent(this, BarcodeIdentified::class.java)
+    val switchActivityIntent = Intent(this, ShowResult::class.java)
     switchActivityIntent.putExtra("barcodeValue", value)
     if (!alreadySwitched) {
       startActivity(switchActivityIntent)

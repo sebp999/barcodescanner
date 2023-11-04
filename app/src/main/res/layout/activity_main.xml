@@ -6,27 +6,19 @@
   android:layout_height="match_parent"
   tools:context=".MainActivity">
 
-  <include layout="@layout/top_bar" />
+
 
   <androidx.camera.view.PreviewView
       android:id="@+id/cameraView"
       android:layout_width="match_parent"
       android:layout_height="0dp"
       app:layout_constraintBottom_toTopOf="@+id/bottomText"
-      app:layout_constraintTop_toBottomOf="@+id/menu_bar">
+      app:layout_constraintTop_toBottomOf="@+id/appBarLayout">
 
   </androidx.camera.view.PreviewView>
 
-  <Button
-      android:id="@+id/button4"
-      android:layout_width="wrap_content"
-      android:layout_height="wrap_content"
-      android:layout_marginTop="80dp"
-      android:onClick="gotoDatabaseREad"
-      android:text="Button"
-      app:layout_constraintLeft_toLeftOf="parent"
-      app:layout_constraintRight_toRightOf="parent"
-      app:layout_constraintTop_toTopOf="@+id/cameraView" />
+  <include layout="@layout/top_bar" />
+
 
   <TextView
       android:id="@+id/bottomText"
@@ -40,5 +32,6 @@
       app:layout_constraintLeft_toLeftOf="parent"
       app:layout_constraintRight_toRightOf="parent"
       tools:text="Barcode Value: " />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

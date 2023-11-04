@@ -1,6 +1,16 @@
 package com.sebswebs.barcodescanner;
 
-import android.app.Activity;
+import android.os.Bundle;
+import android.util.Log;
 
-public class Settings extends Activity {
+import androidx.appcompat.widget.Toolbar;
+
+public class Settings extends BaseMenus {
+    protected void onCreate(Bundle savedInstanceState) {
+        Log.e("xxxx", "created settings");
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.settings);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+    }
 }
